@@ -1,0 +1,33 @@
+{
+  "name": "forged-cli",
+  "version": "0.1.0",
+  "description": "A complete dev environment toolkit — shell, workflows, and project scaffolding in one install.",
+  "keywords": [
+    "cli",
+    "devtools",
+    "dotfiles",
+    "scaffold",
+    "workflow",
+    "zsh"
+  ],
+  "author": "Brandon <DevBrandon@icloud.com> (https://github.com/bkness)",
+  "license": "MIT",
+  "homepage": "https://github.com/RevenueWebs/forged-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/RevenueWebs/forged-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RevenueWebs/forged-cli/issues"
+  },
+  "type": "module",
+  "bin": {
+    "forged": "./bin/forged.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/forged.js"
+  }
+}
