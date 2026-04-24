@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
+
 const [,, command] = process.argv;
 
 const commands = {
@@ -23,9 +30,6 @@ ${Object.entries(commands).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`)
 }
 
 if (command === 'version') {
-  const { createRequire } = await import('module');
-  const require = createRequire(import.meta.url);
-  const { version } = require('../package.json');
   console.log(`forged-cli v${version}`);
   process.exit(0);
 }
