@@ -1,0 +1,20 @@
+// Top npm packages by download count — used for typosquat detection
+export const POPULAR_PACKAGES = [
+  'lodash', 'chalk', 'react', 'express', 'axios', 'moment', 'typescript',
+  'webpack', 'babel', 'eslint', 'prettier', 'jest', 'mocha', 'nodemon',
+  'dotenv', 'cors', 'body-parser', 'mongoose', 'sequelize', 'prisma',
+  'next', 'nuxt', 'vite', 'rollup', 'esbuild', 'turbo', 'nx',
+  'inquirer', 'commander', 'yargs', 'minimist', 'ora', 'boxen', 'figlet',
+  'uuid', 'nanoid', 'crypto', 'bcrypt', 'jsonwebtoken', 'passport',
+  'socket.io', 'ws', 'fastify', 'koa', 'hapi', 'restify',
+  'sharp', 'jimp', 'multer', 'formidable', 'busboy',
+  'redis', 'ioredis', 'pg', 'mysql2', 'sqlite3', 'knex',
+  'zod', 'yup', 'joi', 'ajv', 'class-validator',
+  'rxjs', 'immer', 'zustand', 'redux', 'mobx', 'recoil',
+  'date-fns', 'dayjs', 'luxon', 'validator', 'sanitize-html',
+  'cheerio', 'puppeteer', 'playwright', 'cypress',
+  'tar', 'archiver', 'adm-zip', 'node-fetch', 'got', 'superagent',
+  'cross-env', 'rimraf', 'glob', 'chokidar', 'fs-extra', 'mkdirp',
+  'semver', 'debug', 'winston', 'pino', 'morgan',
+  'pm2', 'concurrently', 'husky', 'lint-staged', 'commitizen',
+];

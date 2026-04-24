@@ -11,6 +11,7 @@ const [,, command, ...args] = process.argv;
 
 const commands = {
   readme:  'Generate a README.md for the current project',
+  scan:    'Audit dependencies for typosquats, bad scripts, and suspicious binaries',
   init:    'Scaffold a new dev environment',
   new:     'Create a new project with GitHub setup',
   install: 'Install Forged into an existing shell config',
@@ -38,6 +39,12 @@ if (command === 'version') {
 if (command === 'readme') {
   const { readmeCommand } = await import('../src/commands/readme.js');
   await readmeCommand(args[0] || 'README.md');
+  process.exit(0);
+}
+
+if (command === 'scan') {
+  const { scanCommand } = await import('../src/commands/scan.js');
+  await scanCommand(process.cwd());
   process.exit(0);
 }
 
