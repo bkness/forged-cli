@@ -44,7 +44,9 @@ if (command === 'readme') {
 
 if (command === 'scan') {
   const { scanCommand } = await import('../src/commands/scan.js');
-  await scanCommand(process.cwd());
+  const report       = args.includes('--report') || args.includes('--report-md');
+  const reportFormat = args.includes('--report-md') ? 'markdown' : 'json';
+  await scanCommand(process.cwd(), { report, reportFormat });
   process.exit(0);
 }
 
