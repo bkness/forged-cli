@@ -4,6 +4,7 @@ import { resolve, join } from 'path';
 import { execSync } from 'child_process';
 import { isSuspiciousName } from '../utils/levenshtein.js';
 import { POPULAR_PACKAGES } from '../utils/popularPackages.js';
+import { verifyTarballIntegrity } from '../utils/verifyIntegrity.js';
 
 const green  = '\x1b[32m';
 const yellow = '\x1b[33m';
@@ -114,33 +115,33 @@ export async function scanCommand(cwd = process.cwd()) {
     }
   }
 
-  // 4. Registry author check (sample first 10 deps to avoid rate limiting)
-  console.log(`   Checking ${depNames.length} dependencies against npm registry...`);
-  const sample = depNames.slice(0, 10);
-  for (const name of sample) {
-    const meta = await fetchRegistryMeta(name);
-    if (!meta) {
-      findings.warnings.push(`Could not fetch registry data for "${name}"`);
-      continue;
-    }
-
-    // Flag packages with no maintainers listed
-    if (!meta.maintainers || meta.maintainers.length === 0) {
-      findings.warnings.push(`"${name}" has no maintainers listed on npm`);
-    }
-
-    // Flag packages with very recent creation + high version (rushed publish pattern)
-    const created = new Date(meta.time?.created);
-    const latest = meta['dist-tags']?.latest;
-    if (latest && created) {
-      const parts = latest.split('.').map(Number);
-      const agedays = (Date.now() - created) / 86400000;
-      if (agedays < 7 && parts[0] > 0) {
-        findings.warnings.push(
-          `"${name}" v${latest} was published within the last 7 days and has a high version number`
-        );
+  // 4. Tarball integrity verification — compares lock file hashes against npm registry
+  process.stdout.write('   Verifying tarball integrity');
+  const { error: integrityError, findings: integrityFindings, total } = await verifyTarballIntegrity(
+    cwd,
+    (checked, total) => {
+      if (checked % 10 === 0 || checked === total) {
+        process.stdout.write(`\r   Verifying tarball integrity (${checked}/${total})...`);
       }
     }
+  );
+  process.stdout.write('\n');
+
+  if (integrityError) {
+    findings.warnings.push(integrityError);
+  } else {
+    for (const f of integrityFindings) {
+      if (f.type === 'error') {
+        let msg = `${f.package}@${f.version}: ${f.message}`;
+        if (f.detail) {
+          msg += `\n       locked:   ${f.detail.locked}\n       registry: ${f.detail.registry}`;
+        }
+        findings.errors.push(msg);
+      } else {
+        findings.warnings.push(`${f.package}@${f.version}: ${f.message}`);
+      }
+    }
+    if (total) findings.info.push(`Verified ${total} packages against npm registry`);
   }
 
   // 5. Binary scan
@@ -166,6 +167,11 @@ export async function scanCommand(cwd = process.cwd()) {
   if (findings.warnings.length > 0) {
     console.log(`${yellow}${bold}WARNINGS (${findings.warnings.length}):${reset}`);
     for (const w of findings.warnings) console.log(`  ${yellow}⚠${reset}  ${w}`);
+    console.log();
+  }
+
+  if (findings.info.length > 0) {
+    for (const i of findings.info) console.log(`  ${green}ℹ${reset}  ${i}`);
     console.log();
   }
 
