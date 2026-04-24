@@ -29,5 +29,8 @@
   },
   "scripts": {
     "start": "node bin/forged.js"
+  },
+  "dependencies": {
+    "inquirer": "^13.4.2"
   }
 }
