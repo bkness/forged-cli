@@ -127,7 +127,9 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   }
 
   // 3. Typosquat check
+  const popularSet = new Set(POPULAR_PACKAGES);
   for (const name of Object.keys(deps)) {
+    if (popularSet.has(name)) continue;
     for (const { known, distance } of isSuspiciousName(name, POPULAR_PACKAGES)) {
       findings.warnings.push({
         package: name,
