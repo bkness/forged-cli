@@ -20,7 +20,7 @@ export function classifyPublisherChange(from, to) {
   const fromTrusted = NPM_TEAM.has(from) || TRUSTED_COMMUNITY.has(from);
   const toTrusted   = NPM_TEAM.has(to)   || TRUSTED_COMMUNITY.has(to);
 
-  if (fromTrusted && toTrusted) return 'info';   // known rotation — suppress
-  if (toTrusted)                return 'warn';   // unknown → trusted (less risky but flag)
-  return 'warn';                                 // anything else — flag it
+  if (toTrusted)   return 'info';   // handed to a trusted publisher — suppress
+  if (fromTrusted) return 'warn';   // trusted → unknown — flag it
+  return 'warn';                    // unknown → unknown — flag it
 }
