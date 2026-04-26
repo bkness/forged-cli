@@ -44,9 +44,13 @@ if (command === 'readme') {
 
 if (command === 'scan') {
   const { scanCommand } = await import('../src/commands/scan.js');
+  const { resolve } = await import('path');
   const report       = args.includes('--report') || args.includes('--report-md');
   const reportFormat = args.includes('--report-md') ? 'markdown' : 'json';
-  await scanCommand(process.cwd(), { report, reportFormat });
+  const verbose      = args.includes('--verbose') || args.includes('-v');
+  const pathArg      = args.find(a => !a.startsWith('--'));
+  const targetPath   = pathArg ? resolve(pathArg) : process.cwd();
+  await scanCommand(targetPath, { report, reportFormat, verbose });
   process.exit(0);
 }
 
