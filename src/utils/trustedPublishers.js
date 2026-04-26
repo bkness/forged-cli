@@ -13,6 +13,7 @@ export const TRUSTED_COMMUNITY = new Set([
   'mysticatea', 'feross', 'mafintosh',
   'phated', 'nodejs-foundation', 'legendecas',
   'ulisesgascon', 'formidablelabs',
+  'blakeembrey', 'wesleytodd', 'danez', 'domenic', 'panva', 'joshuakgoldberg',
 ]);
 
 export function classifyPublisherChange(from, to) {
