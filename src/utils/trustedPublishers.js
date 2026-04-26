@@ -14,6 +14,7 @@ export const TRUSTED_COMMUNITY = new Set([
   'phated', 'nodejs-foundation', 'legendecas',
   'ulisesgascon', 'formidablelabs',
   'blakeembrey', 'wesleytodd', 'danez', 'domenic', 'panva', 'joshuakgoldberg',
+  'matteo.collina', 'rvagg',
 ]);
 
 export function classifyPublisherChange(from, to) {
