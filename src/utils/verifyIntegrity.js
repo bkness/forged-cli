@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { classifyPublisherChange } from './trustedPublishers.js';
 
 // Fetch registry metadata with a simple in-memory cache to avoid duplicate requests
 const registryCache = new Map();
@@ -108,12 +109,13 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
       const versions = Object.keys(registryMeta.versions || {});
       const idx = versions.indexOf(meta.version);
       if (idx > 0) {
-        const prevVersion = versions[idx - 1];
-        const prevPublisher = registryMeta.versions[prevVersion]?._npmUser?.name;
-        const currPublisher = versionData._npmUser?.name;
+        const prevVersion    = versions[idx - 1];
+        const prevPublisher  = registryMeta.versions[prevVersion]?._npmUser?.name;
+        const currPublisher  = versionData._npmUser?.name;
         if (prevPublisher && currPublisher && prevPublisher !== currPublisher) {
+          const severity = classifyPublisherChange(prevPublisher, currPublisher);
           findings.push({
-            type: 'warning',
+            type: severity,
             package: name,
             version: meta.version,
             message: `Publisher changed from "${prevPublisher}" to "${currPublisher}" in this version`,

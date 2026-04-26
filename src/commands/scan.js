@@ -107,12 +107,12 @@ function saveMarkdownReport(reportPath, data) {
 }
 
 export async function scanCommand(cwd = process.cwd(), opts = {}) {
-  const { report, reportFormat = 'json' } = opts;
+  const { report, reportFormat = 'json', verbose = false } = opts;
 
   console.log(`\n${bold}⚒  Forged Scanner${reset}`);
   console.log(`   Scanning: ${cwd}\n`);
 
-  const findings = { warnings: [], errors: [], info: [] };
+  const findings = { warnings: [], errors: [], info: [], suppressed: [] };
   let packagesVerified = 0;
 
   // 1. Parse package.json
@@ -153,7 +153,9 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   } else {
     packagesVerified = total || 0;
     for (const f of integrityFindings) {
-      (f.type === 'error' ? findings.errors : findings.warnings).push(f);
+      if (f.type === 'error')        findings.errors.push(f);
+      else if (f.type === 'info')    findings.suppressed.push(f);
+      else                           findings.warnings.push(f);
     }
     if (total) findings.info.push(`Verified ${total} packages against npm registry`);
   }
@@ -192,12 +194,25 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
     }
   }
 
-  if (findings.info.length > 0) {
-    for (const i of findings.info) console.log(`  ${green}ℹ${reset}  ${i}`);
+  // Verbose: show suppressed trusted rotations
+  if (verbose && findings.suppressed.length > 0) {
+    console.log(`${bold}SUPPRESSED — trusted publisher rotations:${reset}`);
+    for (const s of findings.suppressed) {
+      console.log(`  ${green}~${reset}  ${s.package}@${s.version}: ${s.message}`);
+    }
     console.log();
   }
 
-  console.log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s)\n`);
+  if (findings.info.length > 0) {
+    for (const i of findings.info) console.log(`  ${green}ℹ${reset}  ${i}`);
+  }
+  if (findings.suppressed.length > 0) {
+    const note = verbose ? '' : '  (run with --verbose to see them)';
+    console.log(`  ${green}ℹ${reset}  ${findings.suppressed.length} trusted publisher rotation(s) suppressed${note}`);
+  }
+  console.log();
+
+  console.log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
 
   // Save report if requested
   if (report) {
