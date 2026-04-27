@@ -26,3 +26,7 @@ Early development. Watch this repo for updates.
 ## License
 
 MIT © [Brandon](https://github.com/bkness)
+
+## Contact
+
+Brandon Kelly — [GitHub](https://github.com/bkness) · kbrandon863@gmail.com
