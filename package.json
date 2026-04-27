@@ -1,6 +1,6 @@
 {
   "name": "forged-cli",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A complete dev environment toolkit — shell, workflows, and project scaffolding in one install.",
   "keywords": [
     "cli",
@@ -12,13 +12,13 @@
   ],
   "author": "Brandon <DevBrandon@icloud.com> (https://github.com/bkness)",
   "license": "MIT",
-  "homepage": "https://github.com/RevenueWebs/forged-cli#readme",
+  "homepage": "https://github.com/bkness/forged-cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/RevenueWebs/forged-cli.git"
+    "url": "git+ssh://git@github.com/bkness/forged-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/RevenueWebs/forged-cli/issues"
+    "url": "https://github.com/bkness/forged-cli/issues"
   },
   "type": "module",
   "bin": {
