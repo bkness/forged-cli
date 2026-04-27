@@ -15,6 +15,34 @@ export const TRUSTED_COMMUNITY = new Set([
   'ulisesgascon', 'formidablelabs',
   'blakeembrey', 'wesleytodd', 'danez', 'domenic', 'panva', 'joshuakgoldberg',
   'matteo.collina', 'rvagg',
+  // React-Bootstrap / @restart team
+  'kytsang', 'monastic.panic',
+  // Chart.js core
+  'etimberg',
+  // commander contributor
+  'abetomo',
+  // isomorphic-fetch (Financial Times official org)
+  'financial-times',
+  // webpack core team
+  'evilebottnawi',
+  // mass transfer from shinnn — all legitimate
+  'stevemao',
+  // TC39 delegate, took over ESLint packages from nzakas
+  'michaelficarra',
+  // raf maintainer
+  'cmtegner',
+  // known React developer, react-text-mask
+  'browniefed',
+  // perfect-scrollbar current maintainer
+  'mattonit',
+  // Mapbox internal npm account rotation
+  'mapbox-npm-01', 'mapbox-npm-03',
+  // Prettier automated release bot (replaced fisker)
+  'prettier-bot',
+  // Sequelize current maintainer (replaced sdepold, original creator)
+  'wikirik',
+  // Meta/React Native core team (replaced zertosh on v8-compile-cache)
+  'yungsters',
 ]);
 
 export function classifyPublisherChange(from, to) {
