@@ -216,30 +216,6 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   console.log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
 
-  // Push scan telemetry if token is configured
-  if (process.env.WEBALLTECH_TOKEN) {
-    const flagged = [
-      ...findings.errors.filter(f => f.package).map(f => f.package),
-      ...findings.warnings.filter(f => f.package).map(f => f.package),
-    ];
-    fetch('https://www.weballtech.com/api/forged-status', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.WEBALLTECH_TOKEN}`,
-      },
-      body: JSON.stringify({
-        type: 'scanner',
-        data: {
-          safe:       findings.errors.length === 0 && findings.warnings.length === 0,
-          packages:   packagesVerified,
-          flagged,
-          checked_at: new Date().toISOString(),
-        },
-      }),
-    }).catch(() => {});
-  }
-
   // Save report if requested
   if (report) {
     const reportData = {
