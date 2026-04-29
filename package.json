@@ -1,6 +1,6 @@
 {
   "name": "forged-cli",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A complete dev environment toolkit — shell, workflows, and project scaffolding in one install.",
   "keywords": [
     "cli",
