@@ -36,13 +36,21 @@ export const TRUSTED_COMMUNITY = new Set([
   // perfect-scrollbar current maintainer
   'mattonit',
   // Mapbox internal npm account rotation
-  'mapbox-npm-01', 'mapbox-npm-03',
+  'mapbox-npm-01', 'mapbox-npm-03', 'mbx-npm-02-production', 'mbx-npm-03-production',
   // Prettier automated release bot (replaced fisker)
   'prettier-bot',
   // Sequelize current maintainer (replaced sdepold, original creator)
   'wikirik',
   // Meta/React Native core team (replaced zertosh on v8-compile-cache)
   'yungsters',
+  // cosmiconfig new maintainer (replaced davidtheclark)
+  'd-fischer',
+  // find-root: jden renamed their npm account
+  'jsdnxx',
+  // Express.js core team (replaced ulisesgascon on express@5)
+  'jonchurch',
+  // source-map maintainer, Mozilla engineer (replaced nickfitzgerald)
+  'tromey',
 ]);
 
 export function classifyPublisherChange(from, to) {
