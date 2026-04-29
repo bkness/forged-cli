@@ -1,6 +1,7 @@
 import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { join, basename } from 'path';
+import { homedir } from 'os';
 import { isSuspiciousName } from '../utils/levenshtein.js';
 import { POPULAR_PACKAGES } from '../utils/popularPackages.js';
 import { verifyTarballIntegrity } from '../utils/verifyIntegrity.js';
@@ -215,6 +216,22 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   console.log();
 
   console.log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
+
+  // Write local scan cache — dotfiles reads this to push telemetry
+  const flagged = [
+    ...findings.errors.filter(f => f.package).map(f => f.package),
+    ...findings.warnings.filter(f => f.package).map(f => f.package),
+  ];
+  writeFileSync(
+    join(homedir(), '.forged-scan-cache.json'),
+    JSON.stringify({
+      safe:       findings.errors.length === 0 && findings.warnings.length === 0,
+      packages:   packagesVerified,
+      flagged,
+      checked_at: new Date().toISOString(),
+    }),
+    'utf8'
+  );
 
   // Save report if requested
   if (report) {
