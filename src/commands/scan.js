@@ -132,8 +132,14 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   for (const name of Object.keys(deps)) {
     if (popularSet.has(name)) continue;
     for (const { known, distance } of isSuspiciousName(name, POPULAR_PACKAGES)) {
+      let resolvedVersion;
+      try {
+        const nmPkg = JSON.parse(readFileSync(join(cwd, 'node_modules', name, 'package.json'), 'utf8'));
+        resolvedVersion = nmPkg.version;
+      } catch {}
       findings.warnings.push({
         package: name,
+        version: resolvedVersion,
         message: `${distance} character(s) from popular package "${known}" — possible typosquat`,
       });
     }

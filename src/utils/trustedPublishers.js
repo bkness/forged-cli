@@ -51,6 +51,12 @@ export const TRUSTED_COMMUNITY = new Set([
   'jonchurch',
   // source-map maintainer, Mozilla engineer (replaced nickfitzgerald)
   'tromey',
+  // async: long-standing transfer from aearly
+  'hargasinski',
+  // http-proxy: known contributor, took over from indexzero
+  'jcrugzz',
+  // prebuild-install: known npm ecosystem contributor, took over from lovell
+  'vweevers',
 ]);
 
 export function classifyPublisherChange(from, to) {
