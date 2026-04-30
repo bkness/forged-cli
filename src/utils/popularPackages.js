@@ -5,7 +5,7 @@ export const POPULAR_PACKAGES = [
   'dotenv', 'cors', 'body-parser', 'mongoose', 'sequelize', 'prisma',
   'next', 'nuxt', 'vite', 'rollup', 'esbuild', 'turbo', 'nx',
   'inquirer', 'commander', 'yargs', 'minimist', 'ora', 'boxen', 'figlet',
-  'uuid', 'nanoid', 'crypto', 'bcrypt', 'jsonwebtoken', 'passport',
+  'uuid', 'nanoid', 'crypto', 'bcrypt', 'bcryptjs', 'jsonwebtoken', 'passport',
   'socket.io', 'ws', 'fastify', 'koa', 'hapi', 'restify',
   'sharp', 'jimp', 'multer', 'formidable', 'busboy',
   'redis', 'ioredis', 'pg', 'mysql2', 'sqlite3', 'knex',

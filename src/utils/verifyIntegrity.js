@@ -78,8 +78,11 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
 
       const versionData = registryMeta.versions?.[meta.version];
       if (!versionData) {
+        // -cjs packages are npm's own CJS compat wrappers (string-width-cjs, strip-ansi-cjs, etc.)
+        // They exist on npm but use non-standard version numbers — suppress as info
+        const type = name.endsWith('-cjs') ? 'info' : 'warning';
         findings.push({
-          type: 'warning',
+          type,
           package: name,
           version: meta.version,
           message: `Version ${meta.version} not found on registry`,
