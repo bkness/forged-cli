@@ -26,7 +26,11 @@ npm install -g forged-cli
 Modular zsh config, plugins, and hooks — ready in minutes.
 
 **🔍 Security Scanner**
-Typosquat detection, tarball integrity, suspicious install scripts.
+- **Known malware** — every locked package is checked against [OSV.dev](https://osv.dev), including OpenSSF `MAL-` reports and GitHub malware advisories (CWE-506)
+- **Brand-new versions** — flags versions published in the last 72 hours, the window when hijacked releases usually go unnoticed
+- **Tarball integrity** — lockfile hashes vs. the npm registry
+- **Publisher changes** — flags a version published by a different account than the one before it (known maintainer rotations suppressed)
+- **Typosquats** and **suspicious install scripts**
 
 **📁 Project Workflows**
 Auto-detect, boot, and scaffold Node, Python, Rust, and Go projects.
