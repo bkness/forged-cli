@@ -12,12 +12,17 @@ export function levenshtein(a, b) {
   return dp[m][n];
 }
 
+// Names this short are within 2 edits of lots of unrelated packages
+// (tsx → nx, ws, tar), so only a 1-character difference counts for them.
+const SHORT_NAME = 4;
+
 export function isSuspiciousName(name, popularPackages, threshold = 2) {
   const suspects = [];
   for (const known of popularPackages) {
     if (name === known) continue;
+    const limit = Math.min(name.length, known.length) <= SHORT_NAME ? Math.min(threshold, 1) : threshold;
     const dist = levenshtein(name, known);
-    if (dist > 0 && dist <= threshold) {
+    if (dist > 0 && dist <= limit) {
       suspects.push({ known, distance: dist });
     }
   }

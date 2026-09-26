@@ -43,10 +43,10 @@ forged readme
 `forged scan [path]` audits every package in your `package-lock.json`:
 
 - **Known malware** — checked against [OSV.dev](https://osv.dev), including OpenSSF `MAL-` reports and GitHub malware advisories (CWE-506)
-- **Brand-new versions** — flags versions published in the last 72 hours, the window when hijacked releases usually go unnoticed
+- **Brand-new versions** — flags versions published in the last 72 hours, the window when hijacked releases usually go unnoticed (packages that routinely release every week or two, like `caniuse-lite`, are skipped)
 - **Tarball integrity** — lockfile hashes vs. the npm registry
-- **Publisher changes** — flags a version published by a different account than the one before it (known maintainer rotations are suppressed)
-- **Typosquats** — names one or two characters away from popular packages
+- **Publisher changes** — flags a version whose publisher has never released this package before. Returning maintainers, known teams, and moves to npm trusted publishing are suppressed; security-critical packages like `jsonwebtoken` and `bcrypt` are always flagged for review
+- **Typosquats** — names one or two characters away from popular packages (one for short names, so `tsx` isn't mistaken for `nx`)
 - **Suspicious install scripts** — `curl | sh`, `eval`, base64 decoding and similar
 
 ```
