@@ -265,7 +265,10 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   writeFileSync(
     join(homedir(), '.forged-scan-cache.json'),
     JSON.stringify({
-      safe:       findings.errors.length === 0 && findings.warnings.length === 0,
+      // safe = no errors; warnings (e.g. a very fresh release) are advisory
+      safe:       findings.errors.length === 0,
+      errors:     findings.errors.length,
+      warnings:   findings.warnings.length,
       packages:   packagesVerified,
       flagged,
       checked_at: new Date().toISOString(),
