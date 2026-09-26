@@ -5,6 +5,7 @@ import { homedir } from 'os';
 import { isSuspiciousName } from '../utils/levenshtein.js';
 import { POPULAR_PACKAGES } from '../utils/popularPackages.js';
 import { verifyTarballIntegrity } from '../utils/verifyIntegrity.js';
+import { queryOsv } from '../utils/osv.js';
 
 const green  = '\x1b[32m';
 const yellow = '\x1b[33m';
@@ -150,7 +151,7 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   // 4. Tarball integrity verification
   process.stdout.write('   Verifying tarball integrity');
-  const { error: integrityError, findings: integrityFindings, total } = await verifyTarballIntegrity(
+  const { error: integrityError, findings: integrityFindings, total, packages } = await verifyTarballIntegrity(
     cwd,
     (checked, t) => {
       if (checked % 10 === 0 || checked === t) {
@@ -170,6 +171,29 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
       else                           findings.warnings.push(f);
     }
     if (total) findings.info.push(`Verified ${total} packages against npm registry`);
+  }
+
+  // 4b. Known-malware + vulnerability lookup (OSV.dev)
+  if (packages?.length) {
+    const osv = await queryOsv(packages);
+    if (osv === null) {
+      findings.warnings.push({ message: 'Could not reach OSV.dev — skipped known-malware check' });
+    } else {
+      for (const hit of osv) {
+        if (hit.malicious.length) {
+          findings.errors.push({
+            package: hit.name,
+            version: hit.version,
+            message: `KNOWN MALICIOUS PACKAGE (${hit.malicious.join(', ')}) — remove it and rotate any secrets on this machine`,
+          });
+        }
+      }
+      const vulnerable = osv.filter((h) => h.vulns.length).length;
+      findings.info.push(`Checked ${packages.length} packages against OSV.dev known-malware database`);
+      if (vulnerable) {
+        findings.info.push(`${vulnerable} package(s) have published vulnerabilities — run \`npm audit\` for details`);
+      }
+    }
   }
 
   // 5. Binary scan

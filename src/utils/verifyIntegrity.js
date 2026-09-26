@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { classifyPublisherChange } from './trustedPublishers.js';
+import { hoursSincePublish, FRESH_HOURS } from './freshness.js';
 
 // Fetch registry metadata with a simple in-memory cache to avoid duplicate requests
 const registryCache = new Map();
@@ -108,6 +109,17 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
         return;
       }
 
+      // Brand-new versions haven't been vetted yet — the usual window for hijacks
+      const ageHours = hoursSincePublish(registryMeta.time, meta.version);
+      if (ageHours !== null) {
+        findings.push({
+          type: 'warning',
+          package: name,
+          version: meta.version,
+          message: `Published ${ageHours}h ago — versions under ${FRESH_HOURS}h old haven't been vetted yet`,
+        });
+      }
+
       // Check if the author/publisher changed in this version vs the previous one
       const versions = Object.keys(registryMeta.versions || {});
       const idx = versions.indexOf(meta.version);
@@ -128,5 +140,9 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
     }));
   }
 
-  return { error: null, findings, total: entries.length };
+  const scanned = entries.map(([pkgPath, meta]) => ({
+    name: pkgPath.replace(/^.*node_modules\//, ''),
+    version: meta.version,
+  }));
+  return { error: null, findings, total: entries.length, packages: scanned };
 }
