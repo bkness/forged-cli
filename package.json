@@ -1,6 +1,6 @@
 {
   "name": "forged-cli",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "A complete dev environment toolkit — shell, workflows, and project scaffolding in one install.",
   "keywords": [
     "cli",
@@ -12,11 +12,10 @@
   ],
   "author": "Brandon <DevBrandon@icloud.com> (https://github.com/bkness)",
   "license": "MIT",
-  "homepage": "https://www.weballtech.com",
+  "homepage": "https://weballtech-brandon-kellys-projects.vercel.app/",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/bkness/forged-cli.git",
-    "directory": "https//www.weballtech.com/manual.html"
+    "url": "git+ssh://git@github.com/bkness/forged-cli.git"
   },
   "bugs": {
     "url": "https://github.com/bkness/forged-cli/issues"
