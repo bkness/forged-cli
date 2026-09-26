@@ -28,7 +28,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node bin/forged.js"
+    "start": "node bin/forged.js",
+    "test": "node --test"
   },
   "dependencies": {
     "inquirer": "^13.4.2"
