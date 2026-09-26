@@ -295,4 +295,6 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
     console.log(`${green}✔  Report saved: ${reportFile}${reset}\n`);
   }
+
+  return findings;
 }

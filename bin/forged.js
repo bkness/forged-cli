@@ -10,13 +10,17 @@ const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 
 const [,, command, ...args] = process.argv;
 
 const commands = {
-  readme:  'Generate a README.md for the current project',
-  scan:    'Audit dependencies for typosquats, bad scripts, and suspicious binaries',
+  scan:    'Audit dependencies — known malware, integrity, publisher changes, typosquats',
   gen:     'Generate passwords, secrets, PINs, and UUIDs',
+  readme:  'Generate a README.md for the current project',
+  version: 'Show Forged version',
+};
+
+// Advertised but not built yet — say so instead of treating them as typos
+const planned = {
   init:    'Scaffold a new dev environment',
   new:     'Create a new project with GitHub setup',
   install: 'Install Forged into an existing shell config',
-  version: 'Show Forged version',
 };
 
 if (!command || command === 'help') {
@@ -28,6 +32,13 @@ if (!command || command === 'help') {
 
   Commands:
 ${Object.entries(commands).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`).join('\n')}
+
+  Coming soon:
+${Object.entries(planned).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`).join('\n')}
+
+  Scan options:
+    forged scan [path] [--verbose|-v] [--report|--report-md]
+    Exits 1 when errors are found, so it can fail a CI job.
   `);
   process.exit(0);
 }
@@ -55,10 +66,17 @@ if (command === 'scan') {
   const report       = args.includes('--report') || args.includes('--report-md');
   const reportFormat = args.includes('--report-md') ? 'markdown' : 'json';
   const verbose      = args.includes('--verbose') || args.includes('-v');
-  const pathArg      = args.find(a => !a.startsWith('--'));
+  // Any dash-prefixed arg is a flag, not the path (so `-v` isn't scanned as a dir)
+  const pathArg      = args.find(a => !a.startsWith('-'));
   const targetPath   = pathArg ? resolve(pathArg) : process.cwd();
-  await scanCommand(targetPath, { report, reportFormat, verbose });
+  const findings     = await scanCommand(targetPath, { report, reportFormat, verbose });
+  process.exit(findings?.errors.length ? 1 : 0);
+}
+
+if (planned[command]) {
+  console.log(`⚒  Forged — '${command}' is coming soon.`);
   process.exit(0);
 }
 
-console.log(`⚒  Forged — '${command}' coming soon.`);
+console.error(`⚒  Forged — unknown command '${command}'. Run \`forged help\` to see commands.`);
+process.exit(1);
