@@ -232,7 +232,7 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   // Verbose: show suppressed trusted rotations
   if (verbose && findings.suppressed.length > 0) {
-    console.log(`${bold}SUPPRESSED — trusted publisher rotations:${reset}`);
+    console.log(`${bold}SUPPRESSED — trusted, returning, or trusted-publishing publishers:${reset}`);
     for (const s of findings.suppressed) {
       console.log(`  ${green}~${reset}  ${s.package}@${s.version}: ${s.message}`);
     }
@@ -244,7 +244,7 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   }
   if (findings.suppressed.length > 0) {
     const note = verbose ? '' : '  (run with --verbose to see them)';
-    console.log(`  ${green}ℹ${reset}  ${findings.suppressed.length} trusted publisher rotation(s) suppressed${note}`);
+    console.log(`  ${green}ℹ${reset}  ${findings.suppressed.length} publisher change(s) suppressed${note}`);
   }
   console.log();
 

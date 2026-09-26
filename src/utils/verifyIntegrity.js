@@ -1,7 +1,8 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { classifyPublisherChange } from './trustedPublishers.js';
-import { hoursSincePublish, FRESH_HOURS } from './freshness.js';
+import { publisherChangeSeverity } from './trustedPublishers.js';
+import { hoursSincePublish, isRoutineRelease, FRESH_HOURS } from './freshness.js';
+import { previousVersion } from './semver.js';
 
 // Fetch registry metadata with a simple in-memory cache to avoid duplicate requests
 const registryCache = new Map();
@@ -111,7 +112,7 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
 
       // Brand-new versions haven't been vetted yet — the usual window for hijacks
       const ageHours = hoursSincePublish(registryMeta.time, meta.version);
-      if (ageHours !== null) {
+      if (ageHours !== null && !isRoutineRelease(registryMeta.time, meta.version)) {
         findings.push({
           type: 'warning',
           package: name,
@@ -121,20 +122,33 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
       }
 
       // Check if the author/publisher changed in this version vs the previous one
-      const versions = Object.keys(registryMeta.versions || {});
-      const idx = versions.indexOf(meta.version);
-      if (idx > 0) {
-        const prevVersion    = versions[idx - 1];
-        const prevPublisher  = registryMeta.versions[prevVersion]?._npmUser?.name;
-        const currPublisher  = versionData._npmUser?.name;
+      // Compare by version number, not registry order — backports would
+      // otherwise look like the previous release.
+      const allVersions = Object.keys(registryMeta.versions || {});
+      const prevVersion = previousVersion(allVersions, meta.version);
+      if (prevVersion) {
+        const prevPublisher = registryMeta.versions[prevVersion]?._npmUser?.name;
+        const currPublisher = versionData._npmUser?.name;
         if (prevPublisher && currPublisher && prevPublisher !== currPublisher) {
-          const severity = classifyPublisherChange(prevPublisher, currPublisher);
-          findings.push({
-            type: severity,
-            package: name,
-            version: meta.version,
-            message: `Publisher changed from "${prevPublisher}" to "${currPublisher}" in this version`,
+          // An account that already published an earlier version is a returning
+          // maintainer. The hijack pattern is a first-time publisher.
+          const publishedAt = Date.parse(registryMeta.time?.[meta.version]);
+          const returning = allVersions.some((v) =>
+            v !== meta.version &&
+            registryMeta.versions[v]?._npmUser?.name === currPublisher &&
+            Date.parse(registryMeta.time?.[v]) < publishedAt);
+          const { type, reason } = publisherChangeSeverity({
+            pkg: name, from: prevPublisher, to: currPublisher, returning,
           });
+          const change = `Publisher changed from "${prevPublisher}" to "${currPublisher}"`;
+          const message = {
+            review:    `${change} — security-critical package, review this release`,
+            oidc:      `Moved from "${prevPublisher}" to npm trusted publishing (GitHub Actions)`,
+            returning: `${change} (returning maintainer)`,
+            trusted:   `${change} (trusted publisher)`,
+            new:       `${change} — first release by this account`,
+          }[reason];
+          findings.push({ type, package: name, version: meta.version, message });
         }
       }
     }));

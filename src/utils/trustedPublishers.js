@@ -57,6 +57,10 @@ export const TRUSTED_COMMUNITY = new Set([
   'jcrugzz',
   // prebuild-install: known npm ecosystem contributor, took over from lovell
   'vweevers',
+  // Fastify core team (safe-regex2 and other fastify-org packages)
+  'climba03003',
+  // Better Auth team — now maintains Auth.js / @auth/core
+  'better-gustavo', 'bekacru',
   // Expo core team (bot → human publisher rotations)
   'brentvatne', 'alanhughes', 'kudochien', 'philpl',
   // Software Mansion team (React Native Reanimated / Screens / Worklets)
@@ -66,6 +70,25 @@ export const TRUSTED_COMMUNITY = new Set([
   // Meta/Flow official team org (replaced gkz)
   'flowtype',
 ]);
+
+// Security-critical packages: any publisher change gets a human look, even
+// from a returning maintainer (e.g. jsonwebtoken, julien.wollscheid).
+export const ALWAYS_REVIEW = new Set([
+  'jsonwebtoken', 'jose', 'bcrypt', 'bcryptjs', 'argon2',
+  'node-forge', 'crypto-js', 'tweetnacl', 'express-session', 'cookie-session',
+]);
+
+// "GitHub Actions" as publisher = npm trusted publishing (OIDC from CI)
+const TRUSTED_PUBLISHING = 'GitHub Actions';
+
+// → { type: 'warn' | 'info', reason: 'review' | 'oidc' | 'returning' | 'trusted' | 'new' }
+export function publisherChangeSeverity({ pkg, from, to, returning }) {
+  if (ALWAYS_REVIEW.has(pkg)) return { type: 'warn', reason: 'review' };
+  if (to === TRUSTED_PUBLISHING) return { type: 'info', reason: 'oidc' };
+  if (returning) return { type: 'info', reason: 'returning' };
+  const type = classifyPublisherChange(from, to);
+  return { type, reason: type === 'info' ? 'trusted' : 'new' };
+}
 
 export function classifyPublisherChange(from, to) {
   const fromTrusted = NPM_TEAM.has(from) || TRUSTED_COMMUNITY.has(from);
