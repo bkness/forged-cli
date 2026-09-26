@@ -122,6 +122,13 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   // 1. Parse package.json
   const { deps, scripts, error, name: pkgName, version: pkgVersion } = checkPackageJson(cwd);
+
+  // Not a Node project: nothing to scan. Return before writing the scan
+  // cache, so the dotfiles badge keeps the last real result.
+  if (!existsSync(join(cwd, 'package.json'))) {
+    console.log(`${yellow}ℹ  No package.json here — not a Node project, nothing to scan.${reset}\n`);
+    return null;
+  }
   if (error) findings.errors.push({ message: error });
 
   // 2. Dangerous scripts

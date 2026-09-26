@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,11 +10,11 @@ const BIN = fileURLToPath(new URL('../bin/forged.js', import.meta.url));
 const tmp = () => mkdtempSync(join(tmpdir(), 'forged-cli-'));
 
 // Fake HOME so scans don't overwrite the real ~/.forged-scan-cache.json
-const run = (args, cwd = tmp()) =>
+const run = (args, cwd = tmp(), home = tmp()) =>
   spawnSync(process.execPath, [BIN, ...args], {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, HOME: tmp(), NO_COLOR: '1' },
+    env: { ...process.env, HOME: home, NO_COLOR: '1' },
   });
 
 // No lockfile → no registry/OSV requests, so these run offline
@@ -61,4 +61,18 @@ test('help separates working commands from planned ones', () => {
   assert.match(available, /scan/);
   assert.doesNotMatch(available, /\binit\b/);
   assert.match(planned, /\binit\b/);
+});
+
+test('scan outside a Node project is not an error and leaves the cache alone', () => {
+  const home = tmp();
+  const r = run(['scan'], tmp(), home);
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /not a Node project/);
+  assert.equal(existsSync(join(home, '.forged-scan-cache.json')), false);
+});
+
+test('a malformed package.json is still an error', () => {
+  const dir = tmp();
+  writeFileSync(join(dir, 'package.json'), '{ not json');
+  assert.equal(run(['scan', dir]).status, 1);
 });
