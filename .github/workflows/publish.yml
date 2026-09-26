@@ -22,12 +22,15 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted publishing (OIDC) needs npm >= 11.5.1
+      - run: npm install -g npm@latest
+
       - run: npm ci
 
       - run: npm test
 
-      # --provenance links the published tarball to this commit + workflow run
+      # Trusted publishing: npm verifies this workflow via OIDC — no token.
+      # The package disallows token publishes, so a leaked token can't ship.
+      # --provenance links the tarball to this commit + workflow run.
       - name: Publish
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
