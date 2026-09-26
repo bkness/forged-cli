@@ -8,7 +8,7 @@
 
 **Forged** is a modular CLI that builds your shell, automates your workflow, and scans your dependencies. One command to get airborne.
 
-🌐 **[weballtech.com](https://weballtech.com)** — full docs and feature overview
+🌐 **[weballtech-brandon-kellys-projects.vercel.app](https://weballtech-brandon-kellys-projects.vercel.app/)** — full docs and feature overview
 
 ---
 
@@ -72,4 +72,4 @@ MIT © [Brandon Kelly](https://github.com/bkness)
 
 ## Contact
 
-Brandon Kelly — [GitHub](https://github.com/bkness) · [weballtech.com](https://weballtech.com) · kbrandon863@gmail.com
+Brandon Kelly — [GitHub](https://github.com/bkness) · [weballtech-brandon-kellys-projects.vercel.app](https://weballtech-brandon-kellys-projects.vercel.app/) · kbrandon863@gmail.com

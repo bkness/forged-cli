@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from 'crypto';
+import { randomBytes, randomInt, randomUUID } from 'crypto';
 
 const green  = '\x1b[32m';
 const yellow = '\x1b[33m';
@@ -14,11 +14,13 @@ const DIGITS  = '0123456789';
 const SYMBOLS = '!@#$%^&*()-_=+[]{}|;:,.<>?';
 const SAFE    = '-_';
 
+// randomInt is uniform; `randomBytes(1)[0] % n` over-weights low indexes
+// whenever 256 isn't a multiple of n.
 function randomChar(charset) {
-  return charset[randomBytes(1)[0] % charset.length];
+  return charset[randomInt(charset.length)];
 }
 
-function generatePassword(length, safe = false) {
+export function generatePassword(length, safe = false) {
   const symbols = safe ? SAFE : SYMBOLS;
   const charset = UPPER + LOWER + DIGITS + symbols;
   const required = [
@@ -30,7 +32,7 @@ function generatePassword(length, safe = false) {
   const rest = Array.from({ length: length - required.length }, () => randomChar(charset));
   const all = [...required, ...rest];
   for (let i = all.length - 1; i > 0; i--) {
-    const j = randomBytes(1)[0] % (i + 1);
+    const j = randomInt(i + 1);
     [all[i], all[j]] = [all[j], all[i]];
   }
   return all.join('');
@@ -44,15 +46,27 @@ function colorize(password) {
   }).join('');
 }
 
-function generatePin(length) {
-  return Array.from({ length }, () => randomBytes(1)[0] % 10).join('');
+export function generatePin(length) {
+  return Array.from({ length }, () => randomInt(10)).join('');
+}
+
+// null when no flag given; NaN when the value isn't a whole number
+export function parseLength(args) {
+  const lenArg = args.find(a => /^(-l=|--length=)/.test(a));
+  if (!lenArg) return null;
+  const raw = lenArg.split('=')[1];
+  return /^\d+$/.test(raw) ? Number(raw) : NaN;
 }
 
 export async function genCommand(args) {
   const sub    = args[0];
   const safe   = args.includes('--safe') || args.includes('--ascii');
-  const lenArg = args.find(a => /^(-l=|--length=)/.test(a));
-  const length = lenArg ? parseInt(lenArg.split('=')[1]) : null;
+  const length = parseLength(args);
+
+  if (Number.isNaN(length)) {
+    console.log(`  ${red}--length must be a whole number${reset}`);
+    return;
+  }
 
   if (!sub || sub === 'help') {
     console.log(`
@@ -89,6 +103,7 @@ export async function genCommand(args) {
 
   if (sub === 'pin') {
     const len = length ?? 6;
+    if (len < 1) { console.log(`  ${red}Length must be at least 1${reset}`); return; }
     console.log(`\n  ${bold}PIN${reset}       ${yellow}${generatePin(len)}${reset}\n`);
     return;
   }

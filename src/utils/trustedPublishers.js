@@ -57,6 +57,14 @@ export const TRUSTED_COMMUNITY = new Set([
   'jcrugzz',
   // prebuild-install: known npm ecosystem contributor, took over from lovell
   'vweevers',
+  // Expo core team (bot → human publisher rotations)
+  'brentvatne', 'alanhughes', 'kudochien', 'philpl',
+  // Software Mansion team (React Native Reanimated / Screens / Worklets)
+  'kmag', 'matipl01', 'tjzel', 'kkafar',
+  // MongoDB Node.js driver team org (replaced addaleax)
+  'dbx-node',
+  // Meta/Flow official team org (replaced gkz)
+  'flowtype',
 ]);
 
 export function classifyPublisherChange(from, to) {

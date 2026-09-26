@@ -1,4 +1,4 @@
-import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, lstatSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { join, basename } from 'path';
 import { homedir } from 'os';
@@ -12,7 +12,7 @@ const red    = '\x1b[31m';
 const bold   = '\x1b[1m';
 const reset  = '\x1b[0m';
 
-function checkPackageJson(cwd) {
+export function checkPackageJson(cwd) {
   const pkgPath = join(cwd, 'package.json');
   if (!existsSync(pkgPath)) return { deps: {}, error: 'No package.json found' };
   try {
@@ -28,14 +28,16 @@ function checkPackageJson(cwd) {
   }
 }
 
-function scanBinaries(cwd) {
+export function scanBinaries(cwd) {
   const binDir = join(cwd, 'node_modules', '.bin');
   if (!existsSync(binDir)) return [];
   const results = [];
   for (const file of readdirSync(binDir)) {
     const fullPath = join(binDir, file);
     try {
-      const stat = statSync(fullPath);
+      // lstat, not stat: stat follows the link, so isSymbolicLink() was
+      // always false and every large linked binary got flagged
+      const stat = lstatSync(fullPath);
       if (!stat.isSymbolicLink() && stat.size > 50000) {
         results.push({ file, size: stat.size, flag: 'large non-symlink binary' });
       }
@@ -44,7 +46,7 @@ function scanBinaries(cwd) {
   return results;
 }
 
-function checkDangerousScripts(scripts) {
+export function checkDangerousScripts(scripts) {
   const dangerous = [];
   const patterns = [
     /curl\s+.*\|.*sh/,
@@ -58,6 +60,7 @@ function checkDangerousScripts(scripts) {
     for (const pattern of patterns) {
       if (pattern.test(cmd)) {
         dangerous.push({ script: name, command: cmd });
+        break; // one finding per script, even if several patterns match
       }
     }
   }
