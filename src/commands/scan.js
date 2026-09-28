@@ -6,6 +6,7 @@ import { POPULAR_PACKAGES } from '../utils/popularPackages.js';
 import { verifyTarballIntegrity } from '../utils/verifyIntegrity.js';
 import { queryOsv } from '../utils/osv.js';
 import { previousResult, recordResult } from '../utils/scanState.js';
+import { buildReviewPrompt, parseReview, findClaude, runClaude, stripControl } from '../utils/review.js';
 
 const green  = '\x1b[32m';
 const yellow = '\x1b[33m';
@@ -112,7 +113,7 @@ function saveMarkdownReport(reportPath, data) {
 }
 
 export async function scanCommand(cwd = process.cwd(), opts = {}) {
-  const { report, reportFormat = 'json', verbose = false, changed = false, quiet = false } = opts;
+  const { report, reportFormat = 'json', verbose = false, changed = false, quiet = false, review = false } = opts;
 
   // --quiet: no output unless something is flagged (for shell hooks)
   const log   = quiet ? () => {} : console.log;
@@ -272,6 +273,8 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
 
+  if (review && !quiet) findings.review = await reviewFindings(findings);
+
   recordResult(cwd, findings);
 
   if (quiet && (findings.errors.length || findings.warnings.length)) {
@@ -330,4 +333,54 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   }
 
   return findings;
+}
+
+const VERDICT_STYLE = {
+  'likely-legit': [green, '✔'],
+  unclear:        [yellow, '?'],
+  suspicious:     [red, '✖'],
+};
+
+// --review: second opinion from claude -p on publisher changes auto-verify
+// couldn't clear. Printed only; never changes findings or the exit code.
+async function reviewFindings(findings) {
+  const items = findings.warnings
+    .filter((w) => w.review)
+    .map((w) => ({ ...w.review, signalsPresent: w.verification?.reasons ?? [] }));
+  if (!items.length) {
+    console.log(`${green}✔  Nothing needs review — no unresolved publisher changes.${reset}\n`);
+    return null;
+  }
+
+  const bin = findClaude();
+  if (!bin) {
+    console.log(`${yellow}ℹ  --review needs the Claude Code CLI (\`claude\`) — https://claude.com/claude-code${reset}\n`);
+    return null;
+  }
+
+  process.stdout.write(`   Asking claude -p about ${items.length} publisher change(s)...`);
+  let text;
+  try {
+    text = await runClaude(bin, buildReviewPrompt(items));
+  } catch (err) {
+    console.log(`\n${yellow}ℹ  Review skipped: ${err.message}${reset}\n`);
+    return null;
+  }
+  process.stdout.write('\r\x1b[K');
+
+  const rows = parseReview(text);
+  console.log(`${bold}REVIEW — advisory, from claude -p (doesn't change the results above):${reset}`);
+  if (!rows) {
+    console.log(`  ${yellow}ℹ${reset}  Couldn't read the reply — raw answer:\n`);
+    console.log(stripControl(text, { keepNewlines: true }).trim().slice(0, 4000) + '\n');
+    return null;
+  }
+  for (const r of rows) {
+    const [color, icon] = VERDICT_STYLE[r.verdict];
+    console.log(`  ${color}${icon} ${r.verdict}${reset}  ${bold}${r.package}${reset}`);
+    if (r.reason) console.log(`       ${r.reason}`);
+    if (r.check)  console.log(`       → ${r.check}`);
+  }
+  console.log();
+  return rows;
 }

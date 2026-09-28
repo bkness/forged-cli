@@ -81,6 +81,22 @@ One strong signal, or a medium plus a weak one, verifies the change. Weak signal
 | `--report-md` | Save findings to `forged-report.md` |
 | `--changed` | Skip if `package.json` + lockfile match a scan from the last 7 days (rescans weekly anyway — new malware advisories land even when your lockfile doesn't change) |
 | `--quiet`, `-q` | Print nothing unless something is flagged, then one line — for shell hooks |
+| `--review` | Second opinion from `claude -p` on publisher changes auto-verify couldn't clear (see below) |
+
+### `--review`: a second opinion
+
+Publisher changes that auto-verify can't clear go to [Claude Code](https://claude.com/claude-code) (`claude -p`) along with what the release actually changed: dependencies added or removed, new install scripts, release history, and which verification signals passed.
+
+```
+REVIEW — advisory, from claude -p (doesn't change the results above):
+  ✔ likely-legit  jsonwebtoken@9.0.3
+       The publisher's email domain (auth0.com) matches the repo owner … the patch adds no dependencies and no install scripts. …
+       → Confirm the 9.0.3 tarball matches a tagged commit in auth0/node-jsonwebtoken.
+```
+
+- **Advisory only.** The verdict never changes what's flagged or the exit code.
+- **No tools.** Everything sent comes from the public registry and may be attacker-written, so `claude` runs with tools, MCP servers and slash commands disabled — an injected instruction has nothing to act with. The prompt marks the data untrusted, and control characters are stripped from the reply before it reaches your terminal.
+- **Only what's unresolved** is sent, and only the publisher's email domain, never the address. Needs the `claude` CLI; without it, `--review` says so and the scan runs as normal.
 
 **Scan on `cd`:** `--changed --quiet` is cheap enough to run every time you enter a project (≈50ms when unchanged). A zsh example:
 

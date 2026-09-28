@@ -108,3 +108,11 @@ test('scan --quiet prints one line when something is flagged, and a skip keeps t
   assert.equal(skipped.status, 1);
   assert.equal(skipped.stdout, '');
 });
+
+test('scan --review with nothing unresolved does not call claude', () => {
+  const dir = project({ start: 'node index.js' });
+  writeFileSync(join(dir, 'package-lock.json'), JSON.stringify({ packages: {} }));
+  const r = run(['scan', '--review', dir]);
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /Nothing needs review/);
+});
