@@ -115,11 +115,11 @@ These are advertised in `forged help` and currently print "coming soon":
 
 | Command | Plan |
 |---------|------|
-| `forged init` | Set up a modular zsh environment — plugins, hooks, project auto-detection, and a GitHub dashboard |
+| `forged init` | Guided setup of a modular zsh environment — plugins, hooks, project auto-detection, and the GitHub workflow (Ctrl+G: issue → branch → commit → PR, project boards, label and template pickers) |
 | `forged new` | Create a new project with GitHub setup |
 | `forged install` | Add Forged to an existing shell config |
 
-Want them today? They're running in my [dotfiles](https://github.com/bkness/dotfiles).
+Want them today? Everything above, including the full GitHub workflow, already runs in my [dotfiles](https://github.com/bkness/dotfiles) — `forged init` will package it.
 
 ---
 
