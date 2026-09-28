@@ -3,6 +3,7 @@ import { join } from 'path';
 import { publisherChangeSeverity } from './trustedPublishers.js';
 import { hoursSincePublish, isRoutineRelease, FRESH_HOURS } from './freshness.js';
 import { previousVersion } from './semver.js';
+import { reviewFacts } from './review.js';
 import {
   collectRegistryEvidence,
   fetchContributors,
@@ -180,7 +181,12 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
             trusted:   `${change} (trusted publisher)`,
             new:       `${change} — first release by this account, needs review${evidence}`,
           }[reason];
-          findings.push({ type, package: name, version: meta.version, message, verification });
+          // Still flagged after verification: keep what changed in this
+          // release so `scan --review` can hand it to claude -p
+          const review = verification && type !== 'info'
+            ? reviewFacts({ registryMeta, name, version: meta.version, prevVersion })
+            : undefined;
+          findings.push({ type, package: name, version: meta.version, message, verification, review });
         }
       }
     }));
