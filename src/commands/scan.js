@@ -238,7 +238,7 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   // Verbose: show suppressed trusted rotations
   if (verbose && findings.suppressed.length > 0) {
-    console.log(`${bold}SUPPRESSED — trusted, returning, or trusted-publishing publishers:${reset}`);
+    console.log(`${bold}SUPPRESSED — trusted, verified, returning, or trusted-publishing publishers:${reset}`);
     for (const s of findings.suppressed) {
       console.log(`  ${green}~${reset}  ${s.package}@${s.version}: ${s.message}`);
     }
