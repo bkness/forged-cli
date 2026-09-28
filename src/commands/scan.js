@@ -5,6 +5,7 @@ import { isSuspiciousName } from '../utils/levenshtein.js';
 import { POPULAR_PACKAGES } from '../utils/popularPackages.js';
 import { verifyTarballIntegrity } from '../utils/verifyIntegrity.js';
 import { queryOsv } from '../utils/osv.js';
+import { previousResult, recordResult } from '../utils/scanState.js';
 
 const green  = '\x1b[32m';
 const yellow = '\x1b[33m';
@@ -111,10 +112,14 @@ function saveMarkdownReport(reportPath, data) {
 }
 
 export async function scanCommand(cwd = process.cwd(), opts = {}) {
-  const { report, reportFormat = 'json', verbose = false } = opts;
+  const { report, reportFormat = 'json', verbose = false, changed = false, quiet = false } = opts;
 
-  console.log(`\n${bold}⚒  Forged Scanner${reset}`);
-  console.log(`   Scanning: ${cwd}\n`);
+  // --quiet: no output unless something is flagged (for shell hooks)
+  const log   = quiet ? () => {} : console.log;
+  const write = quiet ? () => {} : (text) => process.stdout.write(text);
+
+  log(`\n${bold}⚒  Forged Scanner${reset}`);
+  log(`   Scanning: ${cwd}\n`);
 
   const findings = { warnings: [], errors: [], info: [], suppressed: [] };
   let packagesVerified = 0;
@@ -125,9 +130,20 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   // Not a Node project: nothing to scan. Return before writing the scan
   // cache, so the dotfiles badge keeps the last real result.
   if (!existsSync(join(cwd, 'package.json'))) {
-    console.log(`${yellow}ℹ  No package.json here — not a Node project, nothing to scan.${reset}\n`);
+    log(`${yellow}ℹ  No package.json here — not a Node project, nothing to scan.${reset}\n`);
     return null;
   }
+
+  // --changed: skip when package.json + lockfile match a recent scan
+  if (changed) {
+    const prev = previousResult(cwd);
+    if (prev) {
+      log(`${green}✔  Unchanged since the scan on ${prev.scannedAt.slice(0, 10)} — skipped ` +
+          `(${prev.errors} error(s), ${prev.warnings} warning(s)).${reset}\n`);
+      return { skipped: true, errorCount: prev.errors, warningCount: prev.warnings };
+    }
+  }
+
   if (error) findings.errors.push({ message: error });
 
   // 2. Dangerous scripts
@@ -156,16 +172,16 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
   }
 
   // 4. Tarball integrity verification
-  process.stdout.write('   Verifying tarball integrity');
+  write('   Verifying tarball integrity');
   const { error: integrityError, findings: integrityFindings, total, packages } = await verifyTarballIntegrity(
     cwd,
     (checked, t) => {
       if (checked % 10 === 0 || checked === t) {
-        process.stdout.write(`\r   Verifying tarball integrity (${checked}/${t})...`);
+        write(`\r   Verifying tarball integrity (${checked}/${t})...`);
       }
     }
   );
-  process.stdout.write('\n');
+  write('\n');
 
   if (integrityError) {
     findings.warnings.push({ message: integrityError });
@@ -211,50 +227,58 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
 
   // Print results
   if (findings.errors.length === 0 && findings.warnings.length === 0) {
-    console.log(`${green}✔  No issues found. Looks clean.${reset}\n`);
+    log(`${green}✔  No issues found. Looks clean.${reset}\n`);
   } else {
     if (findings.errors.length > 0) {
-      console.log(`${red}${bold}ERRORS (${findings.errors.length}):${reset}`);
+      log(`${red}${bold}ERRORS (${findings.errors.length}):${reset}`);
       for (const e of findings.errors) {
         const label = e.package ? `${e.package}@${e.version}: ` : '';
-        console.log(`  ${red}✖${reset}  ${label}${e.message}`);
+        log(`  ${red}✖${reset}  ${label}${e.message}`);
         if (e.detail) {
-          console.log(`       locked:   ${e.detail.locked}`);
-          console.log(`       registry: ${e.detail.registry}`);
+          log(`       locked:   ${e.detail.locked}`);
+          log(`       registry: ${e.detail.registry}`);
         }
       }
-      console.log();
+      log();
     }
 
     if (findings.warnings.length > 0) {
-      console.log(`${yellow}${bold}WARNINGS (${findings.warnings.length}):${reset}`);
+      log(`${yellow}${bold}WARNINGS (${findings.warnings.length}):${reset}`);
       for (const w of findings.warnings) {
         const label = w.package ? `${w.package}@${w.version}: ` : '';
-        console.log(`  ${yellow}⚠${reset}  ${label}${w.message}`);
+        log(`  ${yellow}⚠${reset}  ${label}${w.message}`);
       }
-      console.log();
+      log();
     }
   }
 
   // Verbose: show suppressed trusted rotations
   if (verbose && findings.suppressed.length > 0) {
-    console.log(`${bold}SUPPRESSED — trusted, verified, returning, or trusted-publishing publishers:${reset}`);
+    log(`${bold}SUPPRESSED — trusted, verified, returning, or trusted-publishing publishers:${reset}`);
     for (const s of findings.suppressed) {
-      console.log(`  ${green}~${reset}  ${s.package}@${s.version}: ${s.message}`);
+      log(`  ${green}~${reset}  ${s.package}@${s.version}: ${s.message}`);
     }
-    console.log();
+    log();
   }
 
   if (findings.info.length > 0) {
-    for (const i of findings.info) console.log(`  ${green}ℹ${reset}  ${i}`);
+    for (const i of findings.info) log(`  ${green}ℹ${reset}  ${i}`);
   }
   if (findings.suppressed.length > 0) {
     const note = verbose ? '' : '  (run with --verbose to see them)';
-    console.log(`  ${green}ℹ${reset}  ${findings.suppressed.length} publisher change(s) suppressed${note}`);
+    log(`  ${green}ℹ${reset}  ${findings.suppressed.length} publisher change(s) suppressed${note}`);
   }
-  console.log();
+  log();
 
-  console.log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
+  log(`${bold}Summary:${reset} ${findings.errors.length} error(s), ${findings.warnings.length} warning(s), ${findings.suppressed.length} suppressed\n`);
+
+  recordResult(cwd, findings);
+
+  if (quiet && (findings.errors.length || findings.warnings.length)) {
+    const color = findings.errors.length ? red : yellow;
+    console.log(`${color}⚒  forged: ${findings.errors.length} error(s), ${findings.warnings.length} warning(s) ` +
+                `in ${basename(cwd)} — run \`forged scan\` for details${reset}`);
+  }
 
   // Write local scan cache — dotfiles reads this to push telemetry
   const flagged = [
@@ -302,7 +326,7 @@ export async function scanCommand(cwd = process.cwd(), opts = {}) {
       saveJsonReport(reportFile, reportData);
     }
 
-    console.log(`${green}✔  Report saved: ${reportFile}${reset}\n`);
+    log(`${green}✔  Report saved: ${reportFile}${reset}\n`);
   }
 
   return findings;

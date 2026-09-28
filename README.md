@@ -79,6 +79,15 @@ One strong signal, or a medium plus a weak one, verifies the change. Weak signal
 | `--verbose`, `-v` | Show suppressed maintainer rotations and verified publishers |
 | `--report` | Save findings to `forged-report.json` |
 | `--report-md` | Save findings to `forged-report.md` |
+| `--changed` | Skip if `package.json` + lockfile match a scan from the last 7 days (rescans weekly anyway — new malware advisories land even when your lockfile doesn't change) |
+| `--quiet`, `-q` | Print nothing unless something is flagged, then one line — for shell hooks |
+
+**Scan on `cd`:** `--changed --quiet` is cheap enough to run every time you enter a project (≈50ms when unchanged). A zsh example:
+
+```zsh
+_forged_autoscan() { [[ -f package-lock.json ]] && { forged scan --changed --quiet & } 2>/dev/null }
+chpwd_functions+=(_forged_autoscan)
+```
 
 **In CI:** `forged scan` exits with code `1` when it finds errors (malware, integrity mismatches, dangerous scripts), so it can fail a build:
 
