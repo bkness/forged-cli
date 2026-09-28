@@ -3,6 +3,12 @@ import { join } from 'path';
 import { publisherChangeSeverity } from './trustedPublishers.js';
 import { hoursSincePublish, isRoutineRelease, FRESH_HOURS } from './freshness.js';
 import { previousVersion } from './semver.js';
+import {
+  collectRegistryEvidence,
+  fetchContributors,
+  judgeEvidence,
+  parseGithubRepo,
+} from './verifyPublisher.js';
 
 // Fetch registry metadata with a simple in-memory cache to avoid duplicate requests
 const registryCache = new Map();
@@ -137,18 +143,44 @@ export async function verifyTarballIntegrity(cwd, onProgress) {
             v !== meta.version &&
             registryMeta.versions[v]?._npmUser?.name === currPublisher &&
             Date.parse(registryMeta.time?.[v]) < publishedAt);
-          const { type, reason } = publisherChangeSeverity({
+          let { type, reason } = publisherChangeSeverity({
             pkg: name, from: prevPublisher, to: currPublisher, returning,
           });
+          let verification = null;
+          if (reason === 'new' || reason === 'review') {
+            const registryEvidence = collectRegistryEvidence({
+              registryMeta,
+              version: meta.version,
+              prevVersion,
+              publisher: currPublisher,
+            });
+
+            const gh = parseGithubRepo(versionData.repository?.url);
+            let contributor = null;
+            if (gh) {
+              const logins = await fetchContributors(gh.owner, gh.repo);
+              contributor = logins ? logins.has(currPublisher.toLowerCase()) : null;
+            }
+
+            verification = judgeEvidence({ ...registryEvidence, contributor });
+
+            if (reason === 'new' && verification.verified) {
+              type = 'info';
+              reason = 'verified';
+            }
+          }
+
+          const evidence = verification?.reasons.length ? ` (${verification.reasons.join('; ')})` : '';
           const change = `Publisher changed from "${prevPublisher}" to "${currPublisher}"`;
           const message = {
-            review:    `${change} — security-critical package, review this release`,
+            review:    `${change} — security-critical package, review this release${evidence}`,
+            verified: `${change} — verified: ${verification?.reasons.join('; ')}`,
             oidc:      `Moved from "${prevPublisher}" to npm trusted publishing (GitHub Actions)`,
             returning: `${change} (returning maintainer)`,
             trusted:   `${change} (trusted publisher)`,
-            new:       `${change} — first release by this account`,
+            new:       `${change} — first release by this account, needs review${evidence}`,
           }[reason];
-          findings.push({ type, package: name, version: meta.version, message });
+          findings.push({ type, package: name, version: meta.version, message, verification });
         }
       }
     }));

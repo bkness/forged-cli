@@ -45,7 +45,7 @@ forged readme
 - **Known malware** — checked against [OSV.dev](https://osv.dev), including OpenSSF `MAL-` reports and GitHub malware advisories (CWE-506)
 - **Brand-new versions** — flags versions published in the last 72 hours, the window when hijacked releases usually go unnoticed (packages that routinely release every week or two, like `caniuse-lite`, are skipped)
 - **Tarball integrity** — lockfile hashes vs. the npm registry
-- **Publisher changes** — flags a version whose publisher has never released this package before. Returning maintainers, known teams, and moves to npm trusted publishing are suppressed; security-critical packages like `jsonwebtoken` and `bcrypt` are always flagged for review
+- **Publisher changes** — flags a version whose publisher has never released this package before. Returning maintainers, known teams, and moves to npm trusted publishing are suppressed. A new publisher is **auto-verified** when the evidence holds up (see below); otherwise it's flagged as needing review. Security-critical packages like `jsonwebtoken` and `bcrypt` are always flagged for review, with the evidence attached
 - **Typosquats** — names one or two characters away from popular packages (one for short names, so `tsx` isn't mistaken for `nx`)
 - **Suspicious install scripts** — `curl | sh`, `eval`, base64 decoding and similar
 
@@ -55,9 +55,28 @@ Summary: 0 error(s), 1 warning(s), 39 suppressed
   ℹ  Checked 760 packages against OSV.dev known-malware database
 ```
 
+### Publisher auto-verify
+
+Most publisher changes are ordinary maintainer rotations. Before flagging one, the scanner checks for evidence the new publisher belongs:
+
+| Signal | Strength | Check |
+|--------|----------|-------|
+| Provenance | strong | The release carries a signed npm provenance attestation |
+| Prior maintainer | strong | The publisher was already a maintainer on the previous version |
+| Repo contributor | medium | The publisher's npm name is a contributor to the package's GitHub repo |
+| Org email | weak | The publisher's email domain matches the repo owner (`@auth0.com` → `auth0/…`) |
+| Trusted co-maintainer | weak | A known trusted publisher also maintains the package |
+
+One strong signal, or a medium plus a weak one, verifies the change. Weak signals alone never do. The contributor check calls the GitHub API: set `GITHUB_TOKEN` or log in with `gh` for 5,000 requests/hour instead of 60. If GitHub can't be reached the signal is skipped, not counted against the publisher.
+
+```
+  ⚠  jsonwebtoken@9.0.3: Publisher changed from "charlesrea" to "julien.wollscheid" — security-critical package, review this release (email domain matches the repo owner)
+  ~  react-native-web@0.21.3: Publisher changed from "necolas" to "zoontek" — verified: contributor to the GitHub repo; co-maintains with a trusted publisher
+```
+
 | Flag | Description |
 |------|-------------|
-| `--verbose`, `-v` | Show suppressed maintainer rotations |
+| `--verbose`, `-v` | Show suppressed maintainer rotations and verified publishers |
 | `--report` | Save findings to `forged-report.json` |
 | `--report-md` | Save findings to `forged-report.md` |
 
