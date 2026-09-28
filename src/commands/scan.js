@@ -1,5 +1,4 @@
 import { readFileSync, existsSync, readdirSync, lstatSync, writeFileSync } from 'fs';
-import { createHash } from 'crypto';
 import { join, basename } from 'path';
 import { homedir } from 'os';
 import { isSuspiciousName } from '../utils/levenshtein.js';

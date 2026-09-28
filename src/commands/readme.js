@@ -1,5 +1,5 @@
 import { createRequire } from 'module';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { resolve } from 'path';
 import { detectProjectInfo } from '../utils/detectProject.js';
 import { generateMarkdown } from '../utils/generateMarkdown.js';

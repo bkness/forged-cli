@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
-import { basename, resolve } from 'path';
+import { basename } from 'path';
 
 export function detectProjectInfo() {
   const cwd = process.cwd();
