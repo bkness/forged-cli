@@ -38,6 +38,9 @@ ${Object.entries(planned).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`).
 
   Scan options:
     forged scan [path] [--verbose|-v] [--report|--report-md]
+                       [--changed] [--quiet|-q]
+    --changed  skip if package.json + lockfile match a scan from the last 7 days
+    --quiet    print nothing unless something is flagged (for shell hooks)
     Exits 1 when errors are found, so it can fail a CI job.
   `);
   process.exit(0);
@@ -66,11 +69,14 @@ if (command === 'scan') {
   const report       = args.includes('--report') || args.includes('--report-md');
   const reportFormat = args.includes('--report-md') ? 'markdown' : 'json';
   const verbose      = args.includes('--verbose') || args.includes('-v');
+  const changed      = args.includes('--changed');
+  const quiet        = args.includes('--quiet') || args.includes('-q');
   // Any dash-prefixed arg is a flag, not the path (so `-v` isn't scanned as a dir)
   const pathArg      = args.find(a => !a.startsWith('-'));
   const targetPath   = pathArg ? resolve(pathArg) : process.cwd();
-  const findings     = await scanCommand(targetPath, { report, reportFormat, verbose });
-  process.exit(findings?.errors.length ? 1 : 0);
+  const findings     = await scanCommand(targetPath, { report, reportFormat, verbose, changed, quiet });
+  const errorCount   = findings?.skipped ? findings.errorCount : findings?.errors.length;
+  process.exit(errorCount ? 1 : 0);
 }
 
 if (planned[command]) {
