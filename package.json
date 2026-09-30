@@ -1,7 +1,7 @@
 {
   "name": "forged-cli",
   "version": "0.8.1",
-  "description": "A complete dev environment toolkit — shell, workflows, and project scaffolding in one install.",
+  "description": "A complete dev environment toolkit \u2014 shell, workflows, and project scaffolding in one install.",
   "keywords": [
     "cli",
     "devtools",
@@ -25,7 +25,7 @@
     "forged": "bin/forged.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.12"
   },
   "scripts": {
     "start": "node bin/forged.js",
