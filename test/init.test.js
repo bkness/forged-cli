@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildPlan, hookBlock, zshrcLoadsDotfiles, initCommand, realEnv, TOOLS, HOOK_MARKER } from '../src/commands/init.js';
+import { buildPlan, hookBlock, zshrcLoadsDotfiles, initCommand, realEnv, TOOLS, HOOK_MARKER, packageFor } from '../src/commands/init.js';
 
 const HOME = '/home/test';
 const ALL_TOOLS = Object.keys(TOOLS);
@@ -135,4 +135,9 @@ test('init --yes without Homebrew lists the tools to install and keeps going', a
   assert.match(out.join('\n'), /install these yourself:.*\bgh\b/);
   assert.match(out.join('\n'), /All set/);
   assert.ok(readdirSync(home).includes('.zshrc'));
+});
+
+test('tools install under their Homebrew package name', () => {
+  assert.equal(packageFor('rg'), 'ripgrep');
+  assert.equal(packageFor('jq'), 'jq');
 });

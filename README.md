@@ -48,7 +48,7 @@ forged readme
 It's written for people new to the terminal. It shows the whole plan first, explains each step, and asks before doing it:
 
 1. **Homebrew on your PATH.** If Homebrew is installed but `brew` isn't found (the installer's last step is easy to miss), adds its `shellenv` line to `~/.zprofile`
-2. **Command-line tools.** Installs whichever of `git gh fzf eza bat fd zoxide starship` are missing, with Homebrew
+2. **Command-line tools.** Installs whichever of `git gh fzf eza bat fd zoxide starship ripgrep jq` are missing, with Homebrew
 3. **zinit**, the plugin manager, cloned to `~/.local/share/zinit`
 4. **The dotfiles**, cloned to `~/dev/dotfiles`
 5. **One line in `~/.zshrc`** that loads them. The file is backed up first, and nothing already in it is changed
@@ -62,6 +62,16 @@ Steps that are already done are skipped, so it's safe to run again after fixing 
 | `forged init --yes` | Accept every step without asking |
 
 Needs macOS or Linux. Without Homebrew (on Linux, say), init lists the missing tools for you to install yourself and does the rest.
+
+### After `forged init`
+
+Three things init can't do for you:
+
+1. **Log in to GitHub** for the Ctrl+G dashboard: `gh auth login`. Project boards also need `gh auth refresh -s project`
+2. **Install a Nerd Font** so file icons show instead of boxes: `brew install --cask font-jetbrains-mono-nerd-font`, then choose "JetBrainsMono Nerd Font" in your terminal's font settings
+3. **Linux only: make zsh your shell** with `chsh -s "$(which zsh)"`, then log out and back in. macOS already uses zsh
+
+Then run `exec zsh` (or open a new tab) to load it.
 
 ---
 
