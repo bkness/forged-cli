@@ -10,6 +10,7 @@ const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 
 const [,, command, ...args] = process.argv;
 
 const commands = {
+  init:    'Set up the Forged shell: tools, plugins, dotfiles',
   scan:    'Audit dependencies — known malware, integrity, publisher changes, typosquats',
   gen:     'Generate passwords, secrets, PINs, and UUIDs',
   readme:  'Generate a README.md for the current project',
@@ -18,7 +19,6 @@ const commands = {
 
 // Advertised but not built yet — say so instead of treating them as typos
 const planned = {
-  init:    'Scaffold a new dev environment',
   new:     'Create a new project with GitHub setup',
   install: 'Install Forged into an existing shell config',
 };
@@ -35,6 +35,11 @@ ${Object.entries(commands).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`)
 
   Coming soon:
 ${Object.entries(planned).map(([cmd, desc]) => `    ${cmd.padEnd(10)} ${desc}`).join('\n')}
+
+  Init options:
+    forged init [--dry-run] [--yes|-y]
+    --dry-run  show what would change, change nothing
+    --yes      accept every step without asking
 
   Scan options:
     forged scan [path] [--verbose|-v] [--report|--report-md]
@@ -56,6 +61,11 @@ if (command === 'readme') {
   const { readmeCommand } = await import('../src/commands/readme.js');
   await readmeCommand(args[0] || 'README.md');
   process.exit(0);
+}
+
+if (command === 'init') {
+  const { initCommand } = await import('../src/commands/init.js');
+  process.exit(await initCommand(args));
 }
 
 if (command === 'gen') {
