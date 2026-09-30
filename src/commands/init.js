@@ -22,7 +22,13 @@ export const TOOLS = {
   fd:       'a faster `find`',
   zoxide:   'jump to folders you visit often (Ctrl+J)',
   starship: 'the prompt',
+  rg:       'fast code search behind the code finder',
+  jq:       'reads JSON, for project settings',
 };
+
+// Package names that differ from the command they install
+export const PACKAGES = { rg: 'ripgrep' };
+export const packageFor = (tool) => PACKAGES[tool] ?? tool;
 
 export const DOTFILES_REPO = 'https://github.com/bkness/dotfiles.git';
 export const ZINIT_REPO    = 'https://github.com/zdharma-continuum/zinit.git';
@@ -150,11 +156,11 @@ function apply(step, home, run) {
     }
     case 'tools': {
       if (!step.brewAvailable) {
-        console.log(`  ${yellow}Homebrew isn't installed, so install these yourself:${reset} ${bold}${step.missing.join(' ')}${reset}`);
+        console.log(`  ${yellow}Homebrew isn't installed, so install these yourself:${reset} ${bold}${step.missing.map(packageFor).join(' ')}${reset}`);
         console.log(`  ${dim}On a Mac, get Homebrew from https://brew.sh and run forged init again. On Linux, use your package manager.${reset}`);
         return 'manual';
       }
-      return run(step.brew, ['install', ...step.missing]);
+      return run(step.brew, ['install', ...step.missing.map(packageFor)]);
     }
     case 'zinit':
       return run('git', ['clone', '--depth', '1', ZINIT_REPO, step.dir]);
@@ -237,6 +243,8 @@ export async function initCommand(args, { home = homedir(), env = realEnv(home),
   console.log(`  ${green}${bold}All set.${reset} Next:`);
   console.log(`    ${bold}exec zsh${reset}          load the new shell in this window`);
   console.log(`    ${bold}gh auth login${reset}     connect GitHub, for the Ctrl+G dashboard`);
+  console.log(`    ${bold}a Nerd Font${reset}       for file icons: ${bold}brew install --cask font-jetbrains-mono-nerd-font${reset},`);
+  console.log(`                      then pick it in your terminal's font settings`);
   console.log(`    ${bold}Ctrl+P${reset}            browse every command\n`);
   return 0;
 }
