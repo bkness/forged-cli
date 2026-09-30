@@ -2,10 +2,10 @@
 
 > Your dev environment, forged.
 
-[![npm version](https://img.shields.io/npm/v/forged-cli?color=00ff41&style=flat-square)](https://www.npmjs.com/package/forged-cli)
-[![downloads](https://img.shields.io/npm/dt/forged-cli?color=00ff41&style=flat-square)](https://www.npmjs.com/package/forged-cli)
-[![tests](https://img.shields.io/github/actions/workflow/status/bkness/forged-cli/test.yml?branch=main&label=tests&color=00ff41&style=flat-square)](https://github.com/bkness/forged-cli/actions/workflows/test.yml)
-[![license](https://img.shields.io/npm/l/forged-cli?color=00ff41&style=flat-square)](https://github.com/bkness/forged-cli)
+[![npm version](https://img.shields.io/npm/v/forged-cli?color=1a7f37&labelColor=161b22&style=flat-square)](https://www.npmjs.com/package/forged-cli)
+[![downloads](https://img.shields.io/npm/dt/forged-cli?color=1a7f37&labelColor=161b22&style=flat-square)](https://www.npmjs.com/package/forged-cli)
+[![tests](https://img.shields.io/github/actions/workflow/status/bkness/forged-cli/test.yml?branch=main&label=tests&color=1a7f37&labelColor=161b22&style=flat-square)](https://github.com/bkness/forged-cli/actions/workflows/test.yml)
+[![license](https://img.shields.io/npm/l/forged-cli?color=1a7f37&labelColor=161b22&style=flat-square)](https://github.com/bkness/forged-cli)
 
 **Forged** is a CLI toolkit for developers: a guided zsh setup, a dependency security scanner, a credential generator, and a README generator.
 
