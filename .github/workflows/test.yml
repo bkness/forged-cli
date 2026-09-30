@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['18', '20', '24']
+        node-version: ['20', '22', '24']  # 20.12+ (Inquirer 13); 18 is end-of-life
     steps:
       - uses: actions/checkout@v7
 

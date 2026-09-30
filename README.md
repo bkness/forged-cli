@@ -19,7 +19,7 @@
 npm install -g forged-cli
 ```
 
-Requires Node.js 18 or newer. Published from GitHub Actions with [npm provenance](https://docs.npmjs.com/generating-provenance-statements), so every release is traceable to the commit that built it.
+Requires Node.js 20.12 or newer. Published from GitHub Actions with [npm provenance](https://docs.npmjs.com/generating-provenance-statements), so every release is traceable to the commit that built it.
 
 ---
 

@@ -59,8 +59,8 @@ if (command === 'version') {
 
 if (command === 'readme') {
   const { readmeCommand } = await import('../src/commands/readme.js');
-  await readmeCommand(args[0] || 'README.md');
-  process.exit(0);
+  const written = await readmeCommand(args[0] || 'README.md');
+  process.exit(written === false ? 130 : 0); // 130 = cancelled with Ctrl+C
 }
 
 if (command === 'init') {
