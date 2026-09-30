@@ -7,7 +7,7 @@
 [![tests](https://img.shields.io/github/actions/workflow/status/bkness/forged-cli/test.yml?branch=main&label=tests&color=00ff41&style=flat-square)](https://github.com/bkness/forged-cli/actions/workflows/test.yml)
 [![license](https://img.shields.io/npm/l/forged-cli?color=00ff41&style=flat-square)](https://github.com/bkness/forged-cli)
 
-**Forged** is a CLI toolkit for developers: a dependency security scanner, a credential generator, and a README generator, with shell and workflow tooling on the way.
+**Forged** is a CLI toolkit for developers: a guided zsh setup, a dependency security scanner, a credential generator, and a README generator.
 
 🌐 **[weballtech-brandon-kellys-projects.vercel.app](https://weballtech-brandon-kellys-projects.vercel.app/)** — full docs and feature overview
 
@@ -26,6 +26,9 @@ Requires Node.js 18 or newer. Published from GitHub Actions with [npm provenance
 ## Quick Start
 
 ```sh
+# Set up the Forged shell on this machine (asks before each step)
+forged init
+
 # Scan a project's dependencies
 forged scan ./my-app
 
@@ -35,6 +38,30 @@ forged gen pass
 # Write a README for the current project
 forged readme
 ```
+
+---
+
+## 🐚 Shell Setup
+
+`forged init` sets up the Forged zsh environment from my [dotfiles](https://github.com/bkness/dotfiles): the prompt, the Ctrl+P command palette, the Ctrl+G GitHub dashboard (issue → branch → commit → PR, project boards), code finder, abbreviations, and a hook that scans dependencies when you `cd` into a project.
+
+It's written for people new to the terminal. It shows the whole plan first, explains each step, and asks before doing it:
+
+1. **Homebrew on your PATH.** If Homebrew is installed but `brew` isn't found (the installer's last step is easy to miss), adds its `shellenv` line to `~/.zprofile`
+2. **Command-line tools.** Installs whichever of `git gh fzf eza bat fd zoxide starship` are missing, with Homebrew
+3. **zinit**, the plugin manager, cloned to `~/.local/share/zinit`
+4. **The dotfiles**, cloned to `~/dev/dotfiles`
+5. **One line in `~/.zshrc`** that loads them. The file is backed up first, and nothing already in it is changed
+
+Steps that are already done are skipped, so it's safe to run again after fixing an error.
+
+| Command | What it does |
+|---------|--------------|
+| `forged init` | Guided setup |
+| `forged init --dry-run` | Show the plan, change nothing |
+| `forged init --yes` | Accept every step without asking |
+
+Needs macOS or Linux. Without Homebrew (on Linux, say), init lists the missing tools for you to install yourself and does the rest.
 
 ---
 
@@ -140,11 +167,10 @@ These are advertised in `forged help` and currently print "coming soon":
 
 | Command | Plan |
 |---------|------|
-| `forged init` | Guided setup of a modular zsh environment — plugins, hooks, project auto-detection, and the GitHub workflow (Ctrl+G: issue → branch → commit → PR, project boards, label and template pickers) |
 | `forged new` | Create a new project with GitHub setup |
 | `forged install` | Add Forged to an existing shell config |
 
-Want them today? Everything above, including the full GitHub workflow, already runs in my [dotfiles](https://github.com/bkness/dotfiles) — `forged init` will package it.
+`forged init` already sets up the shell and GitHub workflow these build on.
 
 ---
 

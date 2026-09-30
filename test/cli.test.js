@@ -49,18 +49,21 @@ test('unknown commands fail instead of saying "coming soon"', () => {
 });
 
 test('planned commands say coming soon', () => {
-  const r = run(['init']);
+  const r = run(['new']);
   assert.equal(r.status, 0);
-  assert.match(r.stdout, /'init' is coming soon/);
+  assert.match(r.stdout, /'new' is coming soon/);
 });
 
 test('help separates working commands from planned ones', () => {
   const r = run(['help']);
   assert.equal(r.status, 0);
-  const [available, planned] = r.stdout.split('Coming soon:');
+  const [available, rest] = r.stdout.split('Coming soon:');
+  const planned = rest.split('Init options:')[0];
   assert.match(available, /scan/);
-  assert.doesNotMatch(available, /\binit\b/);
-  assert.match(planned, /\binit\b/);
+  assert.match(available, /\binit\b/);
+  assert.doesNotMatch(available, /\bnew\b/);
+  assert.match(planned, /\bnew\b/);
+  assert.doesNotMatch(planned, /\binit\b/);
 });
 
 test('scan outside a Node project is not an error and leaves the cache alone', () => {
